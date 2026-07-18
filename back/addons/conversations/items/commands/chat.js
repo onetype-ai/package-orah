@@ -24,6 +24,11 @@ commands.Item({
 			type: 'string',
 			required: true,
 			description: 'What the user wrote.'
+		},
+		agent: {
+			type: 'string',
+			value: 'orah',
+			description: 'Id of the top level agent this conversation talks to.'
 		}
 	},
 	out: {
@@ -61,15 +66,15 @@ commands.Item({
 		this._trace = [];
 
 		const result = await $ot.agents.run({
-			agent: 'orah',
+			agent: properties.agent,
 			mode: 'conversation',
 			messages,
 			context: this,
-			caller: 'orah'
+			caller: properties.agent
 		});
 
 		await orah.conversations.Fn('save', item, result.messages);
 
-		resolve({ conversation: item.Get('id'), message: result.text, steps: this._trace }, 'Orah replied.');
+		resolve({ conversation: item.Get('id'), message: result.text, steps: this._trace }, 'Reply received.');
 	}
 });
