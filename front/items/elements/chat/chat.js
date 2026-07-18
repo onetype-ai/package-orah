@@ -10,6 +10,16 @@ elements.ItemAdd({
 			type: 'number',
 			value: 1,
 			description: 'Background depth of the panel from 1 to 3. Inner surfaces sit one step above it.'
+		},
+		agent: {
+			type: 'string',
+			value: 'orah',
+			description: 'Id of the top level agent this conversation talks to.'
+		},
+		name: {
+			type: 'string',
+			value: 'Orah',
+			description: 'Name shown in the panel header.'
 		}
 	},
 	render: function()
@@ -46,7 +56,7 @@ elements.ItemAdd({
 			this.Update();
 			glance();
 
-			const { data, message, code } = await $ot.command('orah:chat', { conversation: this.conversation, message: prompt }, true);
+			const { data, message, code } = await $ot.command('orah:chat', { conversation: this.conversation, message: prompt, agent: this.agent }, true);
 
 			if(code === 200)
 			{
@@ -115,7 +125,7 @@ elements.ItemAdd({
 				<div class="head">
 					<div class="tile"><i>psychology</i></div>
 					<div class="titles">
-						<span class="title">Orah</span>
+						<span class="title">{{ name }}</span>
 						<span class="status"><em></em>Ready</span>
 					</div>
 					<button class="action" ot-tooltip="New conversation" ot-click="fresh"><i>edit_square</i></button>
