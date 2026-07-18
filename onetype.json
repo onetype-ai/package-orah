@@ -1,0 +1,16 @@
+{
+	"type": "package",
+	"slug": "onetype/orah",
+	"name": "Orah",
+	"version": "0.1.0",
+	"description": "The mind of the instance. A conversational orchestrator that plans across specialized agents — each agent isolated with its own instructions and tools, reached only through research and task calls.",
+	"icon": "psychology",
+	"color": "rgba(167, 139, 250, 1)",
+	"core": ">=0.1.0",
+	"status": "enabled",
+	"depends": [],
+	"permissions": [],
+	"limits": {},
+	"features": {},
+	"config": {}
+}

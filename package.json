@@ -1,0 +1,19 @@
+{
+    "name": "@onetype/orah",
+    "version": "0.1.0",
+    "description": "The mind of the instance. A conversational orchestrator that plans across specialized agents — each agent isolated with its own instructions and tools, reached only through research and task calls.",
+    "type": "module",
+    "license": "MIT",
+    "author": "Dejan Tomic <hi@iamdejan.com>",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/onetype-ai/package-orah.git"
+    },
+    "imports": {
+        "#orah/*": "./back/*"
+    },
+    "peerDependencies": {
+        "@onetype/framework": ">=2.0.0",
+        "@onetype/platform": ">=0.1.0"
+    }
+}
