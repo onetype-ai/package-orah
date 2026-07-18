@@ -15,7 +15,6 @@ elements.ItemAdd({
 	render: function()
 	{
 		this.busy = false;
-		this.width = $ot.modules.settings.get('ui.orah.width', 380);
 
 		this.conversation = null;
 		this.messages = [];
@@ -99,13 +98,6 @@ elements.ItemAdd({
 			return step.mode === 'research' ? 'search' : (step.mode === 'note' ? 'bookmark' : 'bolt');
 		};
 
-		this.resize = {
-			edge: ['left'],
-			min: 320,
-			max: 640,
-			onResize: (event) => $ot.modules.settings.set('ui.orah.width', event.width)
-		};
-
 		this.fresh = () =>
 		{
 			this.conversation = null;
@@ -119,7 +111,7 @@ elements.ItemAdd({
 		};
 
 		return `
-			<div :class="'box bg-' + background" :style="'width: ' + width + 'px'" :ot-resize="resize">
+			<div :class="'box bg-' + background">
 				<div class="head">
 					<div class="tile"><i>psychology</i></div>
 					<div class="titles">
