@@ -8,7 +8,9 @@
 	"color": "rgba(167, 139, 250, 1)",
 	"core": ">=0.1.0",
 	"status": "enabled",
-	"depends": [],
+	"depends": [
+		"onetype/agents"
+	],
 	"permissions": [],
 	"limits": {},
 	"features": {},
