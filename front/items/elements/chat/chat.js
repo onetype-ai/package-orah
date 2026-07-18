@@ -56,8 +56,8 @@ elements.ItemAdd({
 				if(data.steps && data.steps.length)
 				{
 					this.messages.push({ id: this.messages.length + 1, role: 'steps', steps: data.steps.map((step) => ({
-						mode: 'tool',
-						agent: step.tool,
+						mode: step.tool,
+						agent: step.agent,
 						label: Object.values(step.input || {}).map((value) => String(value)).join(' · ') || '—',
 						state: 'done'
 					})) });

@@ -40,7 +40,7 @@ commands.Item({
 			each: {
 				type: 'object'
 			},
-			description: 'Tool calls Orah made along the way, with tool, input and output.'
+			description: 'Every tool call in the whole chain, with the agent that made it, the tool, input and output.'
 		}
 	},
 	callback: async function(properties, resolve)
@@ -58,6 +58,8 @@ commands.Item({
 
 		messages.push({ role: 'user', text: properties.message });
 
+		this._trace = [];
+
 		const result = await $ot.agents.run({
 			agent: 'orah',
 			mode: 'conversation',
@@ -68,6 +70,6 @@ commands.Item({
 
 		await orah.conversations.Fn('save', item, result.messages);
 
-		resolve({ conversation: item.Get('id'), message: result.text, steps: result.steps }, 'Orah replied.');
+		resolve({ conversation: item.Get('id'), message: result.text, steps: this._trace }, 'Orah replied.');
 	}
 });
