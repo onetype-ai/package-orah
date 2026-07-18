@@ -14,41 +14,11 @@ elements.ItemAdd({
 	},
 	render: function()
 	{
-		this.typed = '';
 		this.busy = false;
 		this.width = $ot.modules.settings.get('ui.orah.width', 380);
 
-		/* Visual demo data — the real feed replaces this once the orchestrator lands. */
-		this.messages = [
-			{ id: 1, role: 'user', content: 'Koliko projekata trenutno imamo i posalji rezime na Slack?' },
-			{ id: 2, role: 'steps', steps: [
-				{ mode: 'research', agent: 'project', label: 'How many projects exist, by status?', state: 'done', activity: [] },
-				{ mode: 'task', agent: 'slack', label: 'Send the summary to #general', state: 'active', activity: [
-					{ label: 'slack:channels — list channels', state: 'done' },
-					{ label: 'slack:members — who is in #general', state: 'done' },
-					{ label: 'slack:send — posting the summary', state: 'active' }
-				] },
-				{ mode: 'note', agent: null, label: 'The team tracks projects weekly', state: 'done', activity: [] }
-			] },
-			{ id: 3, role: 'assistant', content: 'Imate 14 projekata — 9 aktivnih, 3 pauzirana i 2 završena ove nedelje. Šaljem rezime na #general.' },
-			{ id: 4, role: 'stats', stats: [
-				{ value: '14', label: 'Projects' },
-				{ value: '9', label: 'Active' },
-				{ value: '2', label: 'Done this week' }
-			] },
-			{ id: 5, role: 'items', title: 'Latest projects', items: [
-				{ icon: 'rocket_launch', label: 'Mondobook Travel', hint: 'Updated 2 hours ago', badge: 'Active', color: 'green' },
-				{ icon: 'storefront', label: 'Bakery Site', hint: 'Updated yesterday', badge: 'Paused', color: 'orange' },
-				{ icon: 'fitness_center', label: 'Gym Landing', hint: 'Updated 3 days ago', badge: 'Done', color: 'blue' }
-			] },
-			{ id: 6, role: 'colors', title: 'Brand palette', colors: [
-				{ value: '#a78bfa', label: 'Brand' },
-				{ value: '#22c55e', label: 'Green' },
-				{ value: '#f97316', label: 'Orange' },
-				{ value: '#3b82f6', label: 'Blue' },
-				{ value: '#0f172a', label: 'Ink' }
-			] }
-		];
+		this.conversation = null;
+		this.messages = [];
 
 		const glance = () =>
 		{
@@ -60,14 +30,11 @@ elements.ItemAdd({
 			});
 		};
 
-		this.input = ({ value }) =>
-		{
-			this.typed = value;
-		};
+		const field = () => this.Element && this.Element.querySelector('textarea');
 
-		this.send = () =>
+		this.send = async () =>
 		{
-			const prompt = this.typed.trim();
+			const prompt = field() ? field().value.trim() : '';
 
 			if(!prompt || this.busy)
 			{
@@ -75,7 +42,35 @@ elements.ItemAdd({
 			}
 
 			this.messages.push({ id: this.messages.length + 1, role: 'user', content: prompt });
-			this.typed = '';
+			field() && (field().value = '');
+			this.busy = true;
+			this.Update();
+			glance();
+
+			const { data, message, code } = await $ot.command('orah:chat', { conversation: this.conversation, message: prompt }, true);
+
+			if(code === 200)
+			{
+				this.conversation = data.conversation;
+
+				if(data.steps && data.steps.length)
+				{
+					this.messages.push({ id: this.messages.length + 1, role: 'steps', steps: data.steps.map((step) => ({
+						mode: 'tool',
+						agent: step.tool,
+						label: Object.values(step.input || {}).map((value) => String(value)).join(' · ') || '—',
+						state: 'done'
+					})) });
+				}
+
+				this.messages.push({ id: this.messages.length + 1, role: 'assistant', content: data.message });
+			}
+			else
+			{
+				this.messages.push({ id: this.messages.length + 1, role: 'error', content: message });
+			}
+
+			this.busy = false;
 			this.Update();
 			glance();
 		};
@@ -111,6 +106,13 @@ elements.ItemAdd({
 			onResize: (event) => $ot.modules.settings.set('ui.orah.width', event.width)
 		};
 
+		this.fresh = () =>
+		{
+			this.conversation = null;
+			this.messages = [];
+			this.Update();
+		};
+
 		this.close = () =>
 		{
 			$ot.ui.layouts.close('orah');
@@ -124,7 +126,7 @@ elements.ItemAdd({
 						<span class="title">Orah</span>
 						<span class="status"><em></em>Ready</span>
 					</div>
-					<button class="action" ot-tooltip="New conversation"><i>edit_square</i></button>
+					<button class="action" ot-tooltip="New conversation" ot-click="fresh"><i>edit_square</i></button>
 					<button class="action" ot-tooltip="History"><i>history</i></button>
 					<button class="action" ot-click="close"><i>right_panel_close</i></button>
 				</div>
@@ -187,7 +189,7 @@ elements.ItemAdd({
 				</div>
 				<div class="composer">
 					<div class="field">
-						<textarea :value="typed" rows="1" spellcheck="false" placeholder="Ask Orah..." ot-input="input" ot-keydown="key"></textarea>
+						<textarea rows="1" spellcheck="false" placeholder="Ask Orah..." ot-keydown="key"></textarea>
 						<button class="send" ot-click="send"><i>arrow_upward</i></button>
 					</div>
 				</div>
