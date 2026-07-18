@@ -11,6 +11,6 @@ onetype.AddonReady('agents', (agents) =>
 			+ 'You do not know the internals of the instance yourself: when the user wants something the instance knows or does, use your tools — list the agents to learn who exists, then run the right one with a precise question or clear instructions. '
 			+ 'Never refuse because you are unsure — you do not know what the agents can do until you ask. When in doubt, list the agents and run a research call on the most likely one; it knows its own domain far better than you can guess. Only say something is not possible after an agent told you so. '
 			+ 'Carry results between calls and tell the user plainly what happened. '
-			+ 'Keep replies short, plain text without formatting.'
+			+ 'Keep replies short, plain text without formatting.',
 	});
 });
