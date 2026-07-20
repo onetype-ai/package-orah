@@ -1,5 +1,4 @@
 {
-	"type": "package",
 	"slug": "onetype/orah",
 	"name": "Orah",
 	"version": "0.1.0",
@@ -7,7 +6,7 @@
 	"icon": "psychology",
 	"color": "rgba(167, 139, 250, 1)",
 	"core": ">=0.1.0",
-	"status": "enabled",
+	"status": "disabled",
 	"depends": [
 		"onetype/agents"
 	],
