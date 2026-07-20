@@ -8,7 +8,9 @@
 	"core": ">=0.1.0",
 	"status": "disabled",
 	"depends": [
-		"onetype/agents"
+		"onetype/agents",
+		"onetype/elements",
+		"onetype/admin"
 	],
 	"runtimes": [
 		"admin"
