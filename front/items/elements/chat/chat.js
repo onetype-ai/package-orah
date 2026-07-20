@@ -41,6 +41,88 @@ elements.ItemAdd({
 
 		const field = () => this.Element && this.Element.querySelector('textarea');
 
+		this.stage = null;
+
+		const shape = (steps) => steps.map((step, index) => ({
+			mode: step.tool,
+			agent: step.agent,
+			label: Object.values(step.input || {}).map((value) => String(value)).join(' · ') || '—',
+			input: JSON.stringify(step.input || {}, null, 2),
+			output: step.output === null ? '' : String(step.output || ''),
+			state: step.output === null ? 'active' : 'done',
+			key: index
+		}));
+
+		/* The live steps ride as a normal steps message that keeps getting
+		   its steps swapped while the run goes — one rendering path for
+		   running and finished work. */
+		this.watching = null;
+
+		const track = (steps) =>
+		{
+			if(!steps || !steps.length)
+			{
+				return;
+			}
+
+			if(!this.watching)
+			{
+				this.watching = { id: this.messages.length + 1, role: 'steps', steps: [] };
+				this.messages.push(this.watching);
+			}
+
+			this.watching.steps = shape(steps);
+		};
+
+		const finish = (data) =>
+		{
+			track(data.steps);
+
+			this.watching = null;
+
+			data.plan && this.messages.push({ id: this.messages.length + 1, role: 'plan', content: data.plan });
+			data.reasoning && this.messages.push({ id: this.messages.length + 1, role: 'reasoning', content: data.reasoning });
+
+			this.messages.push({ id: this.messages.length + 1, role: data.state === 'error' ? 'error' : 'assistant', content: data.message });
+
+			this.stage = null;
+			this.busy = false;
+			this.Update();
+			glance();
+		};
+
+		this.watch = (conversation) =>
+		{
+			const poll = setInterval(async () =>
+			{
+				const { data, message, code } = await $ot.command('orah:chat:status', { conversation }, true);
+
+				if(code !== 200 || !data || data.state === 'gone')
+				{
+					clearInterval(poll);
+					this.watching = null;
+					this.messages.push({ id: this.messages.length + 1, role: 'error', content: message || 'The run vanished.' });
+					this.stage = null;
+					this.busy = false;
+					this.Update();
+
+					return;
+				}
+
+				if(data.state === 'done' || data.state === 'error')
+				{
+					clearInterval(poll);
+
+					return finish(data);
+				}
+
+				this.stage = data.state === 'routing' ? 'Planning...' : 'Working...';
+				track(data.steps);
+				this.Update();
+				glance();
+			}, 700);
+		};
+
 		this.send = async () =>
 		{
 			const prompt = field() ? field().value.trim() : '';
@@ -53,35 +135,24 @@ elements.ItemAdd({
 			this.messages.push({ id: this.messages.length + 1, role: 'user', content: prompt });
 			field() && (field().value = '');
 			this.busy = true;
+			this.stage = 'Planning...';
 			this.Update();
 			glance();
 
 			const { data, message, code } = await $ot.command('orah:chat', { conversation: this.conversation, message: prompt, agent: this.agent }, true);
 
-			if(code === 200)
-			{
-				this.conversation = data.conversation;
-
-				if(data.steps && data.steps.length)
-				{
-					this.messages.push({ id: this.messages.length + 1, role: 'steps', steps: data.steps.map((step) => ({
-						mode: step.tool,
-						agent: step.agent,
-						label: Object.values(step.input || {}).map((value) => String(value)).join(' · ') || '—',
-						state: 'done'
-					})) });
-				}
-
-				this.messages.push({ id: this.messages.length + 1, role: 'assistant', content: data.message });
-			}
-			else
+			if(code !== 200)
 			{
 				this.messages.push({ id: this.messages.length + 1, role: 'error', content: message });
+				this.stage = null;
+				this.busy = false;
+				this.Update();
+
+				return;
 			}
 
-			this.busy = false;
-			this.Update();
-			glance();
+			this.conversation = data.conversation;
+			this.watch(data.conversation);
 		};
 
 		this.key = ({ event }) =>
@@ -112,6 +183,9 @@ elements.ItemAdd({
 		{
 			this.conversation = null;
 			this.messages = [];
+			this.watching = null;
+			this.stage = null;
+			this.busy = false;
 			this.Update();
 		};
 
@@ -126,7 +200,7 @@ elements.ItemAdd({
 					<div class="tile"><i>psychology</i></div>
 					<div class="titles">
 						<span class="title">{{ name }}</span>
-						<span class="status"><em></em>Ready</span>
+						<span :class="'status' + (stage ? ' busy' : '')"><em></em>{{ stage ? stage : 'Ready' }}</span>
 					</div>
 					<button class="action" ot-tooltip="New conversation" ot-click="fresh"><i>edit_square</i></button>
 					<button class="action" ot-tooltip="History"><i>history</i></button>
@@ -140,10 +214,18 @@ elements.ItemAdd({
 					</div>
 					<div ot-for="message in messages" :ot-key="message.id" :class="'entry ' + message.role">
 						<div ot-if="message.role === 'user'" class="message user">{{ message.content }}</div>
+						<details ot-if="message.role === 'plan'" class="reasoning">
+							<summary><i>route</i><span>Plan</span><i class="chevron">expand_more</i></summary>
+							<div class="thought">{{ message.content }}</div>
+						</details>
+						<details ot-if="message.role === 'reasoning'" class="reasoning">
+							<summary><i>neurology</i><span>Reasoning</span><i class="chevron">expand_more</i></summary>
+							<div class="thought">{{ message.content }}</div>
+						</details>
 						<div ot-if="message.role === 'assistant'" class="message assistant">{{ message.content }}</div>
 						<div ot-if="message.role === 'error'" class="message error">{{ message.content }}</div>
 						<div ot-if="message.role === 'steps'" class="steps">
-							<div ot-for="step in message.steps" :ot-key="step.label" :class="'step ' + step.state">
+							<div ot-for="step in message.steps" :ot-key="step.key" :class="'step ' + step.state">
 								<div class="main">
 									<i class="what">{{ icon(step) }}</i>
 									<span class="text">
@@ -152,6 +234,11 @@ elements.ItemAdd({
 									</span>
 									<i ot-if="step.state === 'done'" class="mark">check</i>
 								</div>
+								<details ot-if="step.output" class="debug">
+									<summary>data</summary>
+									<pre class="in">{{ step.input }}</pre>
+									<pre class="out">{{ step.output }}</pre>
+								</details>
 								<div ot-if="step.activity && step.activity.length" class="activity">
 									<div ot-for="entry in step.activity.slice(-3)" :ot-key="entry.label" :class="'run ' + entry.state">
 										<em></em>
@@ -187,7 +274,7 @@ elements.ItemAdd({
 							</div>
 						</div>
 					</div>
-					<div ot-if="busy" class="message assistant thinking"><span></span><span></span><span></span></div>
+					<div ot-if="busy && !watching" class="message assistant thinking"><span></span><span></span><span></span></div>
 				</div>
 				<div class="composer">
 					<div class="field">

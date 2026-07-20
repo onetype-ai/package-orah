@@ -85,6 +85,12 @@
 	border-radius: 50%;
 }
 
+.e-a7160a5 .head > .titles > .status.busy > em
+{
+	background: var(--ot-orange);
+	animation: e-a7160a5-pulse 1.2s infinite;
+}
+
 .e-a7160a5 .head > .action
 {
 	display: flex;
@@ -161,6 +167,69 @@
 	background: var(--ot-red-opacity);
 	border-radius: var(--ot-radius-m);
 	color: var(--ot-red);
+}
+
+/* Reasoning — collapsed thinking of the model, above its reply */
+
+.e-a7160a5 .reasoning
+{
+	background: var(--above);
+	border: 1px solid var(--edge);
+	border-radius: var(--ot-radius-m);
+}
+
+.e-a7160a5 .reasoning > summary
+{
+	display: flex;
+	align-items: center;
+	gap: var(--ot-spacing-s);
+	padding: var(--ot-spacing-s) var(--ot-spacing-m);
+	color: var(--ot-text-3);
+	cursor: pointer;
+	font-size: var(--ot-size-s);
+	font-weight: 500;
+	list-style: none;
+	user-select: none;
+}
+
+.e-a7160a5 .reasoning > summary::-webkit-details-marker
+{
+	display: none;
+}
+
+.e-a7160a5 .reasoning > summary:hover
+{
+	color: var(--ot-text-2);
+}
+
+.e-a7160a5 .reasoning > summary > i
+{
+	font-size: 15px;
+}
+
+.e-a7160a5 .reasoning > summary > span
+{
+	flex: 1;
+}
+
+.e-a7160a5 .reasoning > summary > .chevron
+{
+	transition: transform var(--ot-transition-fast);
+}
+
+.e-a7160a5 .reasoning[open] > summary > .chevron
+{
+	transform: rotate(180deg);
+}
+
+.e-a7160a5 .reasoning > .thought
+{
+	padding: 0 var(--ot-spacing-m) var(--ot-spacing-s);
+	color: var(--ot-text-3);
+	font-size: var(--ot-size-s);
+	line-height: 1.55;
+	white-space: pre-wrap;
+	word-break: break-word;
 }
 
 /* Empty */
@@ -303,6 +372,59 @@
 {
 	color: var(--ot-green);
 	font-size: 15px;
+}
+
+/* Debug — raw tool input and output under a step */
+
+.e-a7160a5 .steps > .step > .debug
+{
+	margin-top: var(--ot-spacing-x);
+	margin-left: 7px;
+	padding-left: var(--ot-spacing-m);
+	border-left: 1px solid var(--edge);
+}
+
+.e-a7160a5 .steps > .step > .debug > summary
+{
+	color: var(--ot-text-3);
+	cursor: pointer;
+	font-size: 10px;
+	font-weight: 500;
+	letter-spacing: 0.4px;
+	list-style: none;
+	text-transform: uppercase;
+	user-select: none;
+}
+
+.e-a7160a5 .steps > .step > .debug > summary::-webkit-details-marker
+{
+	display: none;
+}
+
+.e-a7160a5 .steps > .step > .debug > summary:hover
+{
+	color: var(--ot-text-2);
+}
+
+.e-a7160a5 .steps > .step > .debug > pre
+{
+	margin-top: var(--ot-spacing-x);
+	padding: var(--ot-spacing-s);
+	overflow-x: auto;
+	background: var(--fill);
+	border: 1px solid var(--edge);
+	border-radius: var(--ot-radius-s);
+	color: var(--ot-text-2);
+	font-family: monospace;
+	font-size: 11px;
+	line-height: 1.5;
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.e-a7160a5 .steps > .step > .debug > pre.in
+{
+	color: var(--ot-text-3);
 }
 
 /* Agent activity — the last few tool runs under an active call */

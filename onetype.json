@@ -11,6 +11,9 @@
 	"depends": [
 		"onetype/agents"
 	],
+	"runtimes": [
+		"admin"
+	],
 	"permissions": [],
 	"limits": {},
 	"features": {},

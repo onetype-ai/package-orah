@@ -6,7 +6,7 @@ commands.Item({
 	exposed: true,
 	method: 'POST',
 	endpoint: '/api/orah/chat',
-	description: 'Sends a message to Orah and returns its reply. Starts a new conversation unless one is given.',
+	description: 'Sends a message to Orah and returns immediately. The work runs in the background — poll orah:chat:status for live steps and the reply.',
 	metadata: { addon: 'orah.conversations' },
 	condition: function()
 	{
@@ -34,18 +34,7 @@ commands.Item({
 	out: {
 		conversation: {
 			type: 'string',
-			description: 'Id of the conversation the reply belongs to.'
-		},
-		message: {
-			type: 'string',
-			description: 'The reply of Orah.'
-		},
-		steps: {
-			type: 'array',
-			each: {
-				type: 'object'
-			},
-			description: 'Every tool call in the whole chain, with the agent that made it, the tool, input and output.'
+			description: 'Id of the conversation the work runs under — poll orah:chat:status with it.'
 		}
 	},
 	callback: async function(properties, resolve)
@@ -59,22 +48,66 @@ commands.Item({
 			return resolve(null, null, 404);
 		}
 
-		const messages = JSON.parse(item.Get('messages') || '[]');
+		/* Live progress, polled by orah:chat:status. The trace array is
+		   shared with the run — steps land in it the moment a tool starts
+		   and get their output the moment it ends. */
+		orah.chats = orah.chats || {};
 
-		messages.push({ role: 'user', text: properties.message });
+		const progress = {
+			state: 'routing',
+			steps: [],
+			message: null,
+			reasoning: null,
+			plan: null
+		};
 
-		this._trace = [];
+		orah.chats[item.Get('id')] = progress;
 
-		const result = await $ot.agents.run({
-			agent: properties.agent,
-			mode: 'conversation',
-			messages,
-			context: this,
-			caller: properties.agent
-		});
+		const context = this;
 
-		await orah.conversations.Fn('save', item, result.messages);
+		/* Detached on purpose — the request returns now, the work goes on. */
+		(async () =>
+		{
+			const messages = JSON.parse(item.Get('messages') || '[]');
 
-		resolve({ conversation: item.Get('id'), message: result.text, steps: this._trace }, 'Reply received.');
+			/* The router pass — one toolless call that turns the raw message
+			   into a precise delegation brief before the executor sees it.
+			   Small models execute well but decompose poorly mid-loop, so the
+			   decomposition runs alone. Best effort: on failure the raw
+			   message goes through untouched. */
+			let briefed = properties.message;
+
+			messages.push({ role: 'user', text: briefed });
+
+			progress.state = 'working';
+			context._trace = progress.steps;
+
+			try
+			{
+				const result = await $ot.agents.run({
+					agent: properties.agent,
+					mode: 'conversation',
+					messages,
+					context,
+					caller: properties.agent
+				});
+
+				await orah.conversations.Fn('save', item, result.messages);
+
+				progress.message = result.text;
+				progress.reasoning = result.reasoning || null;
+				progress.state = 'done';
+			}
+			catch(error)
+			{
+				progress.message = error.message || 'The run failed.';
+				progress.state = 'error';
+			}
+
+			/* Nobody polls forever — sweep the record after ten minutes. */
+			setTimeout(() => { delete orah.chats[item.Get('id')]; }, 600000);
+		})();
+
+		resolve({ conversation: item.Get('id') }, 'Working on it.');
 	}
 });
