@@ -1,8 +1,8 @@
 import '#orah/addons/notes/addon.js';
 
 /* Core */
-import '#orah/addons/notes/core/schemas/note.js';
-import '#orah/addons/notes/core/emitters/add.js';
+import '#orah/addons/notes/_/schemas/note.js';
+import '#orah/addons/notes/_/emitters/add.js';
 
 /* Functions */
 import '#orah/addons/notes/functions/add.js';

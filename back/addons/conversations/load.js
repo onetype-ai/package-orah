@@ -1,7 +1,7 @@
 import '#orah/addons/conversations/addon.js';
 
 /* Core */
-import '#orah/addons/conversations/core/schemas/conversation.js';
+import '#orah/addons/conversations/_/schemas/conversation.js';
 
 /* Functions */
 import '#orah/addons/conversations/functions/create.js';
