@@ -1,6 +1,4 @@
-import onetype from '@onetype/framework';
-
-onetype.DataSchema('orah.note', {
+onetype.SchemasRegister('orah.note', {
 	id: {
 		type: 'string',
 		description: 'Note id.'

@@ -1,6 +1,4 @@
-import onetype from '@onetype/framework';
-
-onetype.DataSchema('orah.conversation', {
+onetype.SchemasRegister('orah.conversation', {
 	id: {
 		type: 'string',
 		description: 'Conversation id.'

@@ -1,5 +1,3 @@
-import onetype from '@onetype/framework';
-
 onetype.EmitRegister('orah.notes.add', {
 	description: 'Fires after Orah saves something it learned.',
 	metadata: { addon: 'orah.notes' },

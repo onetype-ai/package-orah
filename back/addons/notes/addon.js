@@ -1,5 +1,3 @@
-import onetype from '@onetype/framework';
-
 onetype.AddonReady('orah', (orah) =>
 {
 	orah.notes = onetype.Addon('orah.notes', (addon) =>
