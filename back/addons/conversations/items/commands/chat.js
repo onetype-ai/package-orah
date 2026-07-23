@@ -1,4 +1,4 @@
-import commands from '@onetype/framework/commands';
+import commands from 'addon-commands';
 import orah from '#orah/addon.js';
 
 commands.Item({

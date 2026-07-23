@@ -1,4 +1,5 @@
-onetype.EmitRegister('orah.notes.add', {
+onetype.emitters.ItemAdd({
+    id: 'orah.notes.add',
     description: 'Fires after Orah saves something it learned.',
     metadata: { addon: 'orah.notes' },
     config: {

@@ -1,14 +1,14 @@
-onetype.AddonReady('ui.navbar', (navbar) =>
+onetype.AddonReady('admin.navbar', (navbar) =>
 {
     navbar.Item({
-        id: 'orah',
+        id: 'toggle',
         order: 5,
         position: 'right',
         icon: 'psychology',
         tooltip: 'Orah',
         onClick: () =>
         {
-            $ot.ui.layouts.toggle('orah');
+            commands.Fn('run', 'admin:layouts:toggle', { id: 'panel' });
         }
     });
 });

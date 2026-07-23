@@ -191,7 +191,7 @@ elements.ItemAdd({
 
         this.close = () =>
         {
-            $ot.ui.layouts.close('orah');
+            commands.Fn('run', 'admin:layouts:close', { id: 'panel' });
         };
 
         return `

@@ -8,7 +8,7 @@ orah.notes.Fn('add', async function(content, agent = null)
 
     this.ItemRemove(item.Get('id'), false);
 
-    onetype.Emit('orah.notes.add', { content, agent });
+    onetype.emitters.fire('orah.notes.add', { content, agent });
 
     return item;
 });
